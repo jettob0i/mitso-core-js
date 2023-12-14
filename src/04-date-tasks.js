@@ -18,8 +18,10 @@
  *    'Tue, 26 Jan 2016 13:48:02 GMT' => Date()
  *    'Sun, 17 May 1998 03:00:00 GMT+01' => Date()
  */
-function parseDataFromRfc2822(/* value */) {
-  throw new Error('Not implemented');
+function parseDataFromRfc2822(value) {
+  const timestamp = Date.parse(value);
+  const date = new Date(timestamp);
+  return date;
 }
 
 /**
@@ -33,8 +35,10 @@ function parseDataFromRfc2822(/* value */) {
  *    '2016-01-19T16:07:37+00:00'    => Date()
  *    '2016-01-19T08:07:37Z' => Date()
  */
-function parseDataFromIso8601(/* value */) {
-  throw new Error('Not implemented');
+function parseDataFromIso8601(value) {
+  const timestamp = Date.parse(value);
+  const date = new Date(timestamp);
+  return date;
 }
 
 /**
@@ -51,8 +55,9 @@ function parseDataFromIso8601(/* value */) {
  *    Date(2012,1,1)    => true
  *    Date(2015,1,1)    => false
  */
-function isLeapYear(/* date */) {
-  throw new Error('Not implemented');
+function isLeapYear(date) {
+  const year = date.getFullYear();
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 }
 
 /**
@@ -70,8 +75,20 @@ function isLeapYear(/* date */) {
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,10,0,0,250)     => "00:00:00.250"
  *    Date(2000,1,1,10,0,0),  Date(2000,1,1,15,20,10,453)   => "05:20:10.453"
  */
-function timeSpanToString(/* startDate, endDate */) {
-  throw new Error('Not implemented');
+function timeSpanToString(startDate, endDate) {
+  const timespan = endDate - startDate;
+
+  let hours = Math.floor(timespan / 3600000);
+  let minutes = Math.floor((timespan % 3600000) / 60000);
+  let seconds = Math.floor((timespan % 60000) / 1000);
+  let milliseconds = timespan % 1000;
+
+  hours = hours.toString().padStart(2, '0');
+  minutes = minutes.toString().padStart(2, '0');
+  seconds = seconds.toString().padStart(2, '0');
+  milliseconds = milliseconds.toString().padStart(3, '0');
+
+  return `${hours}:${minutes}:${seconds}.${milliseconds}`;
 }
 
 /**
@@ -90,30 +107,49 @@ function timeSpanToString(/* startDate, endDate */) {
  *    Date.UTC(2016,3,5,18, 0) => Math.PI
  *    Date.UTC(2016,3,5,21, 0) => Math.PI/2
  */
-function angleBetweenClockHands(/* date */) {
-  throw new Error('Not implemented');
-}
+function angleBetweenClockHands(date) {
+  const hour = date.getUTCHours();
+  const minute = date.getUTCMinutes();
 
-/**
- * Write a function that will help you determine the date
- * if you know the number of the day in the year,
- * as well as whether the year is a leap year or not.
- * The function accepts the day number and a boolean value isLeap as arguments,
- * and returns the corresponding date of the year as a string "Month, day".
- *
- * @param {number} day
- * @param {boolean} isLeap
- * @return {string}
- *
- * @example:
- *    getDay(41, false) => "February, 10"
- *    getDay(60, false) => "March, 1"
- *    getDay(60, true) => "February, 29"
- *    getDay(365, false) => "December, 31"
- *    getDay(366, true) => "December, 31"
- */
-function getDay(/* day, isLeap */) {
-  throw new Error('Not implemented');
+  const hourAngle = (hour % 12) * 30 + minute * 0.5;
+  const minuteAngle = minute * 6;
+
+  let angle = Math.abs(hourAngle - minuteAngle);
+
+  if (angle > 180) {
+    angle = 360 - angle;
+  }
+
+  const radians = (angle * Math.PI) / 180;
+  return radians;
+}
+function getDay(day, isLeap) {
+  const months = [
+    { name: 'January', days: 31 },
+    { name: 'February', days: isLeap ? 29 : 28 },
+    { name: 'March', days: 31 },
+    { name: 'April', days: 30 },
+    { name: 'May', days: 31 },
+    { name: 'June', days: 30 },
+    { name: 'July', days: 31 },
+    { name: 'August', days: 31 },
+    { name: 'September', days: 30 },
+    { name: 'October', days: 31 },
+    { name: 'November', days: 30 },
+    { name: 'December', days: 31 }];
+
+  let currentMonth = 0;
+  let remainingDays = day;
+
+  while (remainingDays > months[currentMonth].days) {
+    remainingDays -= months[currentMonth].days;
+    currentMonth += 1;
+  }
+
+  const month = months[currentMonth].name;
+  const date = remainingDays;
+
+  return `${month}, ${date}`;
 }
 
 module.exports = {
